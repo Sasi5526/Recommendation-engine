@@ -24,12 +24,12 @@ prod_correlation_model = pickle.load(open(os.path.join(directory,'prod_correlati
 def html_code_table(prod_df,table_name,file_name,side):
     table_style = '<table style="border: 2px solid; float: ' + side + '; width: 40%;">'
     table_head = '<caption style="text-align: center; caption-side: top; font-size: 140%; font-weight: bold; color:black;"><strong>' + table_name + '</strong></caption>'
-    table_head_row = '<tr><th>Product Name</th><th>Product Category</th><th>Price (in Rs.)</th></tr>'
+    table_head_row = '<tr><th>Product Category</th><th>Price (in Rs.)</th></tr>'
     
     html_code = table_style + table_head + table_head_row
     
     for i in range(len(prod_df.index)):
-        row = '<tr><td>' + str(prod_df['product_id'][i]) + '</td><td>' + str(prod_df['product_category'][i]) + '</td></td>' + str(prod_df['price'][i]) + '</td></tr>'
+        row = '<tr><td>' + str(prod_df['product_category'][i]) + '</td></td>' + str(prod_df['price'][i]) + '</td></tr>'
         html_code = html_code + row
         
     html_code = html_code + '</table>'
@@ -45,13 +45,13 @@ def html_code_table(prod_df,table_name,file_name,side):
 # # Most Popular and Top Selling Products
 # This function calls the html_code_table function to create a .html file for Most Popular Products
 def most_popular_table():
-    most_popular_prods = prod_ranking_model.sort_values('Popularity_Rank',ascending=True)[['product_id','product_category','price']].head(10).reset_index(drop=True)
+    most_popular_prods = prod_ranking_model.sort_values('Popularity_Rank',ascending=True)[['product_category','price']].head(10).reset_index(drop=True)
     
     html_code_table(most_popular_prods,'Most Popular Products','mostpopulartable','left')
 
 # This function calls the html_code_table function to create a .html file for Top Selling Products
 def top_sell_table():
-    top_sell_prods = prod_ranking_model.sort_values('Top_Sell_Rank',ascending=True)[['product_id','product_category','price']].head(10).reset_index(drop=True)
+    top_sell_prods = prod_ranking_model.sort_values('Top_Sell_Rank',ascending=True)[['product_category','price']].head(10).reset_index(drop=True)
     
     html_code_table(top_sell_prods,'Top Selling Products','topselltable','right')
 
@@ -60,14 +60,14 @@ def top_sell_table():
 # This function calls the html_code_table function to create a .html file for Most Popular Products of a Customer
 def cust_most_popular_table(cust_name):
     cust_most_popular_prods = cust_prod_ranking_model[cust_prod_ranking_model['user_id'] == cust_name]
-    cust_most_popular_prods = cust_most_popular_prods.sort_values('Popularity_Rank',ascending=True)[['product_id','product_category','price']].head(10).reset_index(drop=True)
+    cust_most_popular_prods = cust_most_popular_prods.sort_values('Popularity_Rank',ascending=True)[['product_category','price']].head(10).reset_index(drop=True)
     
     html_code_table(cust_most_popular_prods,'Products you Frequently Purchased','custmostpopulartable','left')
 
 # This function calls the html_code_table function to create a .html file for Top Selling Products of a Customer
 def cust_top_sell_table(cust_name):
     cust_top_sell_prods = cust_prod_ranking_model[cust_prod_ranking_model['user_id'] == cust_name]
-    cust_top_sell_prods = cust_top_sell_prods.sort_values('Top_Sell_Rank',ascending=True)[['product_id','product_category','price']].head(10).reset_index(drop=True)
+    cust_top_sell_prods = cust_top_sell_prods.sort_values('Top_Sell_Rank',ascending=True)[['product_category','price']].head(10).reset_index(drop=True)
     
     #print(cust_top_sell_prods)
     html_code_table(cust_top_sell_prods,'Products you Purchased the Most','custtopselltable','right')
@@ -110,7 +110,7 @@ def recommend_prod_cust(cust_name):
     prod_recommend_to_cust = df_merge[df_merge['No_of_Orders'].isnull()]
     
     # sort the dataframe on Qty_Corr
-    prod_recommend_to_cust = prod_recommend_to_cust.sort_values('rating_Corr',ascending=False)[['product_id','product_category','price']].head(10).reset_index(drop=True)
+    prod_recommend_to_cust = prod_recommend_to_cust.sort_values('rating_Corr',ascending=False)[['product_category','price']].head(10).reset_index(drop=True)
     
     #print(prod_recommend_to_cust)
     
@@ -135,7 +135,7 @@ def similar_prods(prod_name):
     input_prod_index = similar_prods[similar_prods['product_id'] == prod_name].index
     similar_prods.drop(index=input_prod_index,inplace=True)
     
-    similar_prods = similar_prods[['product_id','product_category','price']].head(10).reset_index(drop=True)
+    similar_prods = similar_prods[['product_category','price']].head(10).reset_index(drop=True)
     
     #print(similar_prods)
     
