@@ -1,49 +1,38 @@
-
 import pandas as pd
-import os
-from os  import getcwd
 import pickle
 from flask import Flask, render_template, request
 
 
 app = Flask(__name__)
-
-directory = getcwd()
-
-
-
-prod_ranking_model = pickle.load(open(os.path.join(directory,'prod_ranking_model.pkl'),'rb'))
-cust_prod_ranking_model = pickle.load(open(os.path.join(directory,'cust_prod_ranking_model.pkl'),'rb'))
-cust_correlation_model = pickle.load(open(os.path.join(directory,'cust_correlation_model.pkl'),'rb'))
-prod_correlation_model = pickle.load(open(os.path.join(directory,'prod_correlation_model.pkl'),'rb'))
-
-
-# # HTML code for displaying Table
+prod_ranking_model = pickle.load(open('prod_ranking_model.pkl','rb'))
+cust_prod_ranking_model = pickle.load(open('cust_prod_ranking_model.pkl','rb'))
+cust_correlation_model = pickle.load(open('cust_correlation_model.pkl','rb'))
+prod_correlation_model = pickle.load(open('prod_correlation_model.pkl','rb'))
 
 
 # This function structures the HTML code for displaying the table on website
 def html_code_table(prod_df,table_name,file_name,side):
     table_style = '<table style="border: 2px solid; float: ' + side + '; width: 40%;">'
-    table_head = '<caption style="text-align: center; caption-side: top; font-size: 140%; font-weight: bold; color:black;"><strong>' + table_name + '</strong></caption>'
+    table_head = '<caption style="font-size: 160%; font-weight: bold;"><strong>' + table_name + '</strong></caption>'
     table_head_row = '<tr><th>Product Name</th><th>Product Category</th><th>Price (in Rs.)</th></tr>'
     
     html_code = table_style + table_head + table_head_row
     
     for i in range(len(prod_df.index)):
-        row = '<tr><td>' + str(prod_df['product_id'][i]) + '</td><td>' + str(prod_df['product_category'][i]) + '</td></td>' + str(prod_df['price'][i]) + '</td></tr>'
+        row = '<tr><td>' + str(prod_df['product_id'][i]) + '</td><td>' + str(prod_df['product_category'][i]) + '</td><td>' + str(prod_df['price'][i]) + '</td></tr>'
         html_code = html_code + row
         
     html_code = html_code + '</table>'
     
-    file_path = os.path.join(directory,'templates/')
-    
+    file_path = "C:\\Users\\sasim\\OneDrive\\Desktop\\gcp_deployment\\templates\\"
+    #file_path = "C:/Users/prths/Desktop/Girish/Data Science/Capstone Project/templates/"
     hs = open(file_path + file_name + '.html', 'w')
     hs.write(html_code)
     
     #print(html_code)
 
 
-# # Most Popular and Top Selling Products
+
 # This function calls the html_code_table function to create a .html file for Most Popular Products
 def most_popular_table():
     most_popular_prods = prod_ranking_model.sort_values('Popularity_Rank',ascending=True)[['product_id','product_category','price']].head(10).reset_index(drop=True)
@@ -57,7 +46,10 @@ def top_sell_table():
     html_code_table(top_sell_prods,'Top Selling Products','topselltable','right')
 
 
-# # Customer Frequently Purchased and Purchased the Most Products
+
+
+
+#Customer Frequently Purchased and Purchased the Most Products
 # This function calls the html_code_table function to create a .html file for Most Popular Products of a Customer
 def cust_most_popular_table(cust_name):
     cust_most_popular_prods = cust_prod_ranking_model[cust_prod_ranking_model['user_id'] == cust_name]
@@ -74,8 +66,8 @@ def cust_top_sell_table(cust_name):
     html_code_table(cust_top_sell_prods,'Products you Purchased the Most','custtopselltable','right')
 
 
-# # Products Customer may Like
 
+#Products Customer may Like
 # This function performs the below functionality for the input customer
 # - get the list of customers with similar purchasing pattern and correlation coefficient
 # - for each customer from the list,
@@ -107,7 +99,7 @@ def recommend_prod_cust(cust_name):
     # ignore the products already purchased by the input customer
     # merge prod_by_similar_custs and customer purchased products and drop the rows with No_of_orders being Not Null
     input_cust_top_sell_prods = cust_prod_ranking_model[cust_prod_ranking_model['user_id'] == cust_name]
-    df_merge = pd.merge(prod_by_similar_custs,input_cust_top_sell_prods[['product_id','No_of_Orders','product_category']],how='left',on='product_id')
+    df_merge = pd.merge(prod_by_similar_custs,input_cust_top_sell_prods[['product_id','product_category','No_of_Orders']],how='left',on='product_id')
     prod_recommend_to_cust = df_merge[df_merge['No_of_Orders'].isnull()]
     
     # sort the dataframe on Qty_Corr
@@ -118,10 +110,11 @@ def recommend_prod_cust(cust_name):
     html_code_table(prod_recommend_to_cust,'Products you may like','prodrecommendtable','center')
 
 
+
+#Similar Products to Display
 # This function performs the below functionality for the input product
 # - get the list of products with similar purchasing pattern and correlation coefficient
 # - get the price of each product from prod_ranking_model
-# - get the price of input product and return to main
 # - drop the product in view from the list
 # - sort them by the correlation coefficient
 # - calls the html_code_table function to create a .html file for top 10 products similar to the product in view
@@ -131,18 +124,37 @@ def similar_prods(prod_name):
     
     similar_prods = pd.merge(similar_prods_corr,prod_ranking_model[['product_id','product_category','price']],how='left',on='product_id')
     
-    prod_price = similar_prods[similar_prods['product_id'] == prod_name]['price'].values[0]
-    
-    input_prod_index = similar_prods[similar_prods['product_id'] == prod_name].index
-    similar_prods.drop(index=input_prod_index,inplace=True)
+    drop_index = similar_prods[similar_prods['product_id'] == prod_name].index
+    similar_prods.drop(index=drop_index,inplace=True)
     
     similar_prods = similar_prods[['product_id','product_category','price']].head(10).reset_index(drop=True)
     
     #print(similar_prods)
     
     html_code_table(similar_prods,'Customers who purchased this product also purchased these','similarprodtable','left')
-    
-    return prod_price
+
+
+
+
+
+#most_popular_table()
+#top_sell_table()
+
+#cust_name = str('DVR-CHITWELI').upper()
+#print(cust_name)
+
+#cust_most_popular_table(cust_name)
+#cust_top_sell_table(cust_name)
+
+
+#recommend_prod_cust(cust_name)
+
+
+#similar_prods('GOLD LEAF SITTING(1')
+
+
+
+
 
 @app.route("/")
 def home():
@@ -157,7 +169,8 @@ def login():
     most_popular_table()
     top_sell_table()
     
-    cust_name = str(request.args.get('name'))
+    cust_name = str(request.args.get('name')).upper()
+    #cust_name = str('balaji plastics').upper()
     
     if cust_name in cust_prod_ranking_model['user_id'].unique():
         cust_most_popular_table(cust_name)
@@ -169,12 +182,13 @@ def login():
 
     
 @app.route("/view")
-def view():
-    prod_name = str(request.args.get('prod'))
+def sim_prod():
+    prod_name = str(request.args.get('prod')).upper()
+    #cust_name = str('gold leaf sitting(1').upper()
     
     if prod_name in prod_ranking_model['product_id'].unique():
-        prod_price = similar_prods(prod_name)
-        return render_template('prod_view.html',prod=prod_name,price=prod_price,exists='y')
+        similar_prods(prod_name)
+        return render_template('prod_view.html',prod=prod_name,exists='y')
     else:
         return render_template('prod_view.html',prod=prod_name,exists='n')
 
