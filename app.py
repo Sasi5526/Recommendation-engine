@@ -34,7 +34,7 @@ def html_code_table(prod_df,table_name,file_name,side):
         
     html_code = html_code + '</table>'
     
-    file_path = os.path.join(directory,'templates/')
+    file_path = os.path.join(directory,'Templates/')
     
     hs = open(file_path + file_name + '.html', 'w')
     hs.write(html_code)
